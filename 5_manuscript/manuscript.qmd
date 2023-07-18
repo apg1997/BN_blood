@@ -1,5 +1,7 @@
 ---
 title: "Change in hemoglobin as a novel marker for incident iron deficiency in blood donors"
+execute: 
+  echo: false
 format:
   docx: 
     reference-doc: word-style-reference-manuscript.docx
@@ -64,35 +66,16 @@ library(data.table) #for using datatables instead of frames
 library(scales) #formatting plot legends and text
 library(readxl) #read.excel
 library(flextable) #generating tables
-library(ftExtra)
-library(officedown) #formatting for word
-library(officer)
-library(stringr)
+# library(ftExtra)
+# library(officedown) #formatting for word
+# library(officer)
+# library(stringr)
 theme_set(theme_bw())
-knitr::opts_chunk$set(
-  echo       = FALSE,
-  message    = FALSE,
-  warning    = FALSE
-)
-
-#takes table column containing references for sources
-gen_tab_sourcestr <- function(sources_raw){
-  sources <- str_match(sources_raw, ".*\\[@\\s*(.*?)\\s*\\]")[,2]
-  #remove NA
-  sources <- sources[!is.na(sources)]
-  #attack '@
-  sources <- paste0("@", sources)
-  #add commas
-  sources[-length(sources)] <- paste0(sources[-length(sources)], "; ")
-  sources <- paste0("[", paste0(sources, collapse=""), "]")
-  return(sources)
-}
 
 ```
 
 ```{r}
 df_samp <- read_excel("../1_data/tables.xlsx", sheet = "sample")
-sourcestr_t_samp <- gen_tab_sourcestr(df_samp$Source)
 ```
 
 # Abstract
