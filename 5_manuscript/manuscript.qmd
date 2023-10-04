@@ -23,15 +23,15 @@ crossref:
 <!---
 
 NOTES:
--   To render both word and HTML, can type this into terminal
+-   To render both word and HTML, type this into terminal
 
 quarto render 5_manuscript/manuscript.qmd
 
 -   There are limits in cross-referencing in Quarto. The table
-   Caption doesn't work well with flextable package, and 
-  There's no option for secondary (supplemental) series of 
-  tables or figures. As workaround, we repurpose other
-  series.I'm using
+    Caption doesn't work well with flextable package, and 
+    There's no option for secondary (supplemental) series of 
+    tables or figures. As workaround, I've repurpose other
+    series (theorems, lemmas).I'm using
         @thm- for tables (Table X)
         @cor- for supplemental tables (Table SX)
         @lem- for supplemental figures (Figure SX)
@@ -39,8 +39,14 @@ quarto render 5_manuscript/manuscript.qmd
    for now. Can manually correct before submitting to journal.
         
 Flextable package isn't playing nicely with quarto for crossreferencing at the 
-moment but it's being actively worked on. To install latest package version, use 
+moment, which is why I'm using @thm- to crossreference tables. But it's being
+actively worked on. To install latest package version, use 
+
   devtools::install_github("davidgohel/flextable")
+  
+Issue threads:
+https://github.com/quarto-dev/quarto-cli/issues/1556
+https://github.com/davidgohel/flextable/issues/494
 
 --->
 ```
@@ -62,10 +68,10 @@ W. Alton Russell^1^, others
 
 ```{r setup, include=FALSE}
 library(ggplot2) #plots
-library(data.table) #for using datatables instead of frames
-library(scales) #formatting plot legends and text
+library(data.table) #use datatables instead of frames
+library(scales) #format plot legends and text
 library(readxl) #read.excel
-library(flextable) #generating tables
+library(flextable) #format tables for display
 # library(ftExtra)
 # library(officedown) #formatting for word
 # library(officer)
@@ -92,7 +98,7 @@ df_samp <- read_excel("../1_data/tables.xlsx", sheet = "sample")
 
 # Introduction
 
-Citation [@Langham2018a]. See @fig-sample, @cor-sample, @thm-sample, and @lem-sample.
+Citation [@Langham2018a]. See @fig-sample, @cor-sample, @thm-sample, and @lem-sample. Inline and latex equations are easy: $\pi$ equals `r pi`.
 
 {{< pagebreak >}}
 
@@ -100,19 +106,19 @@ Citation [@Langham2018a]. See @fig-sample, @cor-sample, @thm-sample, and @lem-sa
 
 ## Subsection
 
-A
+Text.
 
 <br>
 
 # Results
 
-A
+Text.
 
 <br>
 
 # Discussion
 
-A
+Text.
 
 <br>
 
@@ -120,17 +126,17 @@ A
 
 # Declarations
 
-**Funding:** A
+**Funding:** Text.
 
-**Conflicts:** A
+**Conflicts:** Text.
 
-**Ethics/Consent:** A
+**Ethics/Consent:** Text.
 
-**Data and materials:** A
+**Data and materials:** Text.
 
-**Code availability:** A
+**Code availability:** Text.
 
-**Authors' contributions: A**
+**Authors' contributions:** Text.
 
 {{< pagebreak >}}
 
