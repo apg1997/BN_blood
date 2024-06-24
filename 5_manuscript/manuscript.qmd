@@ -5,49 +5,68 @@ execute:
 format:
   docx: 
     reference-doc: word-style-reference-manuscript.docx
-  html: default
+  html:
+    embed-resources: true
+    toc: true
 bibliography: bib.bib
 csl: american-medical-association-brackets.csl
 editor: visual
 crossref: 
-  thm-title: "Table"
-  thm-prefix: "Table"
-  cor-title: "Table S"
-  cor-prefix: "Table S"
-  lem-title: "Figure S"
-  lem-prefix: "Figure S"
-  fig-title: "**Figure**"
+  custom:
+    - kind: float
+      key: suppfig
+      latex-env: suppfig
+      reference-prefix: Figure S
+      space-before-numbering: false
+      latex-list-of-description: Supplementary Figure
+    - kind: float
+      key: supptbl
+      latex-env: supptbl
+      reference-prefix: Table S
+      space-before-numbering: false
+      latex-list-of-description: Supplementary Table
+      caption-location: bottom
+    - kind: float
+      key: table
+      latex-env: table
+      reference-prefix: Table5
+      space-before-numbering: true
+      latex-list-of-description: Table
+      caption-location: bottom
 ---
 
 ```{=html}
 <!---
 
 NOTES:
--   To render both word and HTML, type this into terminal
+- To render both word and HTML, type this into terminal
 
-quarto render 5_manuscript/manuscript.qmd
+    quarto render 5_manuscript/manuscript.qmd
 
--   There are limits in cross-referencing in Quarto. The table
-    Caption doesn't work well with flextable package, and 
-    There's no option for secondary (supplemental) series of 
-    tables or figures. As workaround, I've repurpose other
-    series (theorems, lemmas).I'm using
-        @thm- for tables (Table X)
-        @cor- for supplemental tables (Table SX)
-        @lem- for supplemental figures (Figure SX)
-  The space between "S" and the number for supplemental figures seems unavoidable
-   for now. Can manually correct before submitting to journal.
-        
-Flextable package isn't playing nicely with quarto for crossreferencing at the 
-moment, which is why I'm using @thm- to crossreference tables. But it's being
-actively worked on. To install latest package version, use 
+- Make sure you have the latest Quarto installed 
+    (v1.4 needed for supplemental table/figure crossreferencing to work)
 
-  devtools::install_github("davidgohel/flextable")
+- Flextable package having issues if you use the built-in 'tbl' key for
+  cross-referencing so I'm using a custom one 'table.' Unfortunately it doesn't
+  work if you tell it to put table captions on the tob. Hope to fix
+  once its resolved. For latest version of flextable can use.
+
+    devtools::install_github("davidgohel/flextable")
   
-Issue threads:
-https://github.com/quarto-dev/quarto-cli/issues/1556
-https://github.com/davidgohel/flextable/issues/494
+    Issue thread:
+    https://github.com/quarto-dev/quarto-cli/issues/7321
 
+- All reference and supplemental tables/figures must be cited in the main text.
+  For articles cited in supplment, you should also cite where you cite that
+  supplemental material.
+  
+  Example:
+  'Parameters are in @supptbl-params [@cite1; @cite2; @cite3]
+  
+  I prefer this method because authors do not get 'credit' for their paper
+  being cited when you use a separate reference list is used in the 
+  supplement, 
+  
 --->
 ```
 W. Alton Russell^1^, others
@@ -98,7 +117,7 @@ df_samp <- read_excel("../1_data/tables.xlsx", sheet = "sample")
 
 # Introduction
 
-Citation [@Langham2018a]. See @fig-sample, @cor-sample, @thm-sample, and @lem-sample. Inline and latex equations are easy: $\pi$ equals `r pi`.
+Citation [@Langham2018a]. See @fig-sample, @table-sample, @supptbl-sample, and @suppfig-sample. Inline and latex equations are easy: $\pi$ equals `r pi`.
 
 {{< pagebreak >}}
 
@@ -128,13 +147,15 @@ Text.
 
 **Funding:** Text.
 
+**Acknowledgements:** The authors thank X for their guidance on the analysis.
+
 **Conflicts:** Text.
 
 **Ethics/Consent:** Text.
 
-**Data and materials:** Text.
+**Data and materials:** Data use agreements do not allow sharing of individual-level data. All other data will be made publically available.
 
-**Code availability:** Text.
+**Code availability:** All analytical code will be posted in a public repository upon publication.
 
 **Authors' contributions:** Text.
 
@@ -149,9 +170,7 @@ Text.
 
 # Tables
 
-::: {#thm-sample}
-Table caption here.
-
+::: {#table-sample}
 ```{r}
 t_samp <- as_flextable(as_grouped_data(df_samp,
                                               groups = "subhead"))
@@ -168,6 +187,8 @@ t_samp <- align(t_samp, align = "left", part = "all")
 
 t_samp
 ```
+
+Table caption here.
 :::
 
 {{< pagebreak >}}
@@ -186,17 +207,39 @@ knitr::include_graphics("../4_output/figs/figure.png")
 
 # Supplemental materials
 
+
+::: {custom-style="no_indent"}
+**Repeat manuscript title here**
+
 <br>
 
-# A. Supplement section
+
+W. Alton Russell, others
+
+:::
+
+<br>
+
+[Repeat author list here]
+
+
+{{< pagebreak >}}
+
+# Supplemental methods
+
+## Data preprocessing
+
+Text.
+
+## Algorithm development
+
+Text.
 
 {{< pagebreak >}}
 
 # Supplemental tables
 
-::: {#cor-sample}
-Table caption here.
-
+::: {#supptbl-sample}
 ```{r}
 t_samp <- as_flextable(as_grouped_data(df_samp,
                                               groups = "subhead"))
@@ -213,16 +256,18 @@ t_samp <- align(t_samp, align = "left", part = "all")
 
 t_samp
 ```
+
+Table caption here.
 :::
 
 {{< pagebreak >}}
 
 # Supplemental figures
 
-::: {#lem-sample}
-Figure caption here.
-
+::: {#suppfig-sample}
 ```{r}
 knitr::include_graphics("../4_output/figs/figure.png")
 ```
+
+Figure caption here.
 :::
