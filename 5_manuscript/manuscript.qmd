@@ -29,7 +29,7 @@ crossref:
     - kind: float
       key: table
       latex-env: table
-      reference-prefix: Table5
+      reference-prefix: Table
       space-before-numbering: true
       latex-list-of-description: Table
       caption-location: bottom
@@ -207,21 +207,17 @@ knitr::include_graphics("../4_output/figs/figure.png")
 
 # Supplemental materials
 
-
 ::: {custom-style="no_indent"}
 **Repeat manuscript title here**
 
 <br>
 
-
 W. Alton Russell, others
-
 :::
 
 <br>
 
-[Repeat author list here]
-
+\[Repeat author list here\]
 
 {{< pagebreak >}}
 
