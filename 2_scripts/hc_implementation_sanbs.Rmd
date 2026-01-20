@@ -1,0 +1,145 @@
+---
+title: "HC_SANBS"
+output:
+  html_document:
+    df_print: paged
+date: 
+---
+
+```{r}
+# Load Libraries
+library(pacman)
+p_load(tidyverse, bnlearn, dtplyr)
+# 
+# # Load and Prepare Data
+# sanbs_df <- read.csv("/d3mod/donor_data/SANBS_2019-2022_2025May.csv")
+
+```
+
+```{r}
+# sanbs_dt <- lazy_dt(sanbs_df)
+# sanbs_dt <- sanbs_dt %>%
+#   mutate(Visit_Date = as.Date(Visit_Date),
+#          next_visit = as.Date(next_visit),
+#          Def_start = as.Date(Def_start),
+#          Def_end = as.Date(Def_end))
+```
+
+```{r}
+# bn_df <- sanbs_dt %>%
+#   select(-Visit_Date, -next_visit, -Def_start, -Def_end, 
+#          -DonorID, -MobileID, -Visit_yr, -Visit_Mo, -EffectiveYr, -EffectiveMo,
+#          -donation_product, -DEF_LENGTH, -DefCode, -don_seq, -col_Int, -race_group,
+#          -Deferral_permanent) %>%
+#   as.data.frame() %>%
+#   mutate(across(where(is.character), as.factor)) %>%
+#   mutate(across(where(is.integer), as.numeric))
+# saveRDS(bn_df, "bn_df.rds")
+bn_df <- readRDS("bn_df.rds")
+n <- nrow(bn_df)
+k_bic <- log(n)
+
+
+```
+
+```{r}
+
+fixed_vars <- c("Race", "ABO_RH", "Visit_age", "sex")
+all_vars <- names(bn_df)
+
+
+blacklist <- expand.grid(from = all_vars, to = fixed_vars, stringsAsFactors = FALSE)
+blacklist <- as.data.frame(blacklist)
+colnames(blacklist) <- c("from", "to")
+
+blacklist <- blacklist[blacklist$from != blacklist$to, ]
+
+cat("Total blacklisted edges:", nrow(blacklist), "\n")
+cat("Edges blocked into Race:", sum(blacklist$to == "Race"), "\n")
+cat("Edges blocked into ABO_RH:", sum(blacklist$to == "ABO_RH"), "\n")
+cat("Edges blocked into Visit_age:", sum(blacklist$to == "Visit_age"), "\n")
+cat("Edges blocked into sex:", sum(blacklist$to == "sex"), "\n\n")
+
+
+```
+
+```{r}
+# Learn Bayesian Network with blacklist
+n <- nrow(bn_df)
+k_bic <- log(n)
+
+cat("Sample size:", n, "\n")
+cat("BIC penalty (k = log(n)):", k_bic, "\n\n")
+
+bn_model <- hc(bn_df, score = "pnal-cg", k = k_bic, blacklist = blacklist)
+saveRDS(bn_model, "bn_model_pnal_bic_blacklist.rds")
+```
+```{r}
+# library(parallel)
+# 
+# # Assume you already have:
+# # bn_model -> learned structure from hc()
+# # bn_df    -> your dataset (may contain missing values)
+# 
+# # Create a cluster with 13 cores
+# n_cores <- 13
+# cl <- makeCluster(n_cores)
+# cat("Using", n_cores, "cores for hard-EM fitting\n")
+# 
+# # Fit parameters using hard-EM
+# bn_fitted <- bn.fit(
+#   bn_model,
+#   bn_df,
+#   method = "hard-em-cg",
+#   keep.fitted = FALSE,  # optional, reduces memory usage
+#   debug = FALSE,
+#   cluster = cl         # parallelize over nodes
+# )
+# 
+# # Stop the cluster when done
+# stopCluster(cl)
+```
+
+```{r}
+p_load(Rgraphviz)
+g <- as.graphNEL(bn_model)
+attrs <- list(
+  node = list(
+    fontsize = 30,
+    shape = "ellipse",
+    fillcolor = "lightblue",
+    style = "filled"
+  ),
+  edge = list(
+    color = "gray40"
+  )
+)
+plot(g, attrs = attrs, "fdp")
+```
+
+```{r}
+evidence_list <- list(
+  Race = factor("African Black", levels = levels(bn_df$Race)),
+  Visit_age = 35,
+  sex = factor("Male", levels = levels(bn_df$sex)),
+  SITE_Type = factor("Mobile", levels = levels(bn_df$SITE_Type)),
+  donor_type = factor("Repeat", levels = levels(bn_df$donor_type)),
+  donation_time = 1245,
+  DonProc = factor("WHOLE BLOOD", levels = levels(bn_df$DonProc))
+)
+
+# Get samples using cpdist
+n_samples <- 10000
+samples <- cpdist(bn_fitted, 
+                  nodes = "HB_Value",
+                  evidence = evidence_list,
+                  method = "lw",
+                  n = n_samples)
+
+mean_hb <- mean(samples$HB_Value)
+ci_95 <- quantile(samples$HB_Value, probs = c(0.025, 0.975))
+
+cat("\n=== Prediction Results ===\n")
+cat("Mean HB_Value:", round(mean_hb, 2), "\n")
+cat("95% CrI:[", round(ci_95[1], 2), ",", round(ci_95[2], 2), "]\n")
+```
